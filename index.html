@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Product Entry Form</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --border: #1e2d47;
+      --accent: #00d4ff;
+      --accent2: #ff6b35;
+      --green: #00e5a0;
+      --text: #e8edf5;
+      --muted: #6b7fa3;
+      --radius: 14px;
+      --glow: 0 0 30px rgba(0,212,255,0.15);
+    }
+
+    body {
+      font-family: 'DM Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(0,212,255,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(255,107,53,0.05) 0%, transparent 60%);
+    }
+
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      padding: 40px 0 36px;
+      position: relative;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(0,212,255,0.3);
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      background: rgba(0,212,255,0.05);
+    }
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    header p {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    /* GOOGLE SHEET CONFIG */
+    .config-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .config-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .config-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .config-label::before {
+      content: '⚙';
+      font-size: 14px;
+    }
+    .config-input-wrap {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .config-input-wrap input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .config-input-wrap input:focus {
+      border-color: var(--accent);
+    }
+    .config-hint {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .config-hint a { color: var(--accent); text-decoration: none; }
+    .config-hint a:hover { text-decoration: underline; }
+
+    /* FORM CARD */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--glow);
+    }
+
+    .fields-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 600px) {
+      .fields-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .field-full {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .field label .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .field label .dot.orange { background: var(--accent2); }
+    .field label .dot.green { background: var(--green); }
+
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap .prefix {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    .input-wrap input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px 13px 36px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+      appearance: none;
+    }
+    .input-wrap input.no-prefix {
+      padding-left: 14px;
+    }
+    .input-wrap input:focus {
+      border-color: var(--accent);
+      background: rgba(0,212,255,0.04);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+    }
+    .input-wrap input.orange:focus {
+      border-color: var(--accent2);
+      background: rgba(255,107,53,0.04);
+      box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+    }
+    .input-wrap input.green:focus {
+      border-color: var(--green);
+      background: rgba(0,229,160,0.04);
+      box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
+    }
+    .input-wrap input::placeholder { color: #3a4a66; }
+
+    /* PROFIT DISPLAY */
+    .profit-bar {
+      grid-column: 1 / -1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .profit-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .profit-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--green);
+      transition: color 0.3s;
+    }
+    .profit-value.negative { color: #ff4d6d; }
+    .profit-pct {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* SUBMIT */
+    .btn-row {
+      margin-top: 28px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      flex: 1;
+      min-width: 140px;
+      padding: 15px 24px;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #0099cc);
+      color: #000;
+      box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,255,0.45); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+    /* STATUS */
+    .status-msg {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-msg.success {
+      display: flex;
+      background: rgba(0,229,160,0.1);
+      border: 1px solid rgba(0,229,160,0.3);
+      color: var(--green);
+    }
+    .status-msg.error {
+      display: flex;
+      background: rgba(255,77,109,0.1);
+      border: 1px solid rgba(255,77,109,0.3);
+      color: #ff4d6d;
+    }
+    .status-msg.loading {
+      display: flex;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.2);
+      color: var(--accent);
+    }
+
+    /* TABLE */
+    .table-section {
+      margin-top: 32px;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      background: var(--surface2);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    tbody td {
+      padding: 12px 16px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .td-profit { color: var(--green); }
+    .td-profit.neg { color: #ff4d6d; }
+    .td-name { font-weight: 500; }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* SPINNER */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* FADE IN */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .form-card, .config-card { animation: fadeUp 0.5s ease both; }
+    .config-card { animation-delay: 0.1s; }
+    .form-card    { animation-delay: 0.2s; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="badge">Inventory Manager</div>
+    <h1>Product Entry Form</h1>
+    <p>Add products and sync directly to Google Sheets</p>
+  </header>
+
+  <!-- GOOGLE SHEET CONFIG -->
+  <div class="config-card">
+    <div class="config-label">Google Sheets Connection</div>
+    <div class="config-input-wrap">
+      <input type="text" id="sheetUrl" placeholder="Paste your Google Apps Script Web App URL here..." />
+    </div>
+    <div class="config-hint">
+      ⓘ You need a <strong>Google Apps Script Web App URL</strong> to connect.
+      <a href="#setup-guide" onclick="toggleGuide(event)">How to set it up →</a>
+    </div>
+    <div id="setup-guide" style="display:none; margin-top:14px; padding:14px; background:rgba(0,212,255,0.05); border-radius:8px; border:1px solid rgba(0,212,255,0.15); font-size:11px; line-height:2; color:#a0b0c8;">
+      <strong style="color:var(--accent);">Setup Steps:</strong><br>
+      1. Open <a href="https://sheets.google.com" target="_blank">Google Sheets</a> → create a new sheet<br>
+      2. Add headers in row 1: <code style="color:var(--green);">Date | Product Name | Price | Buy Price | Sell Price | Profit | Margin%</code><br>
+      3. Go to <strong>Extensions → Apps Script</strong><br>
+      4. Paste the script below, save, then click <strong>Deploy → New deployment → Web App</strong><br>
+      5. Set "Who has access" to <strong>Anyone</strong> → Deploy → copy the URL above<br><br>
+      <strong style="color:var(--accent);">Apps Script Code:</strong>
+      <pre id="scriptCode" style="margin-top:8px; background:#0a0e1a; padding:12px; border-radius:6px; font-size:10px; overflow-x:auto; color:#e8edf5; white-space:pre-wrap;">function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    
+    var buy  = parseFloat(data.buyPrice)  || 0;
+    var sell = parseFloat(data.sellPrice) || 0;
+    var qty  = parseFloat(data.quantity)  || 1;
+    var profit = (sell - buy) * qty;
+    var margin = buy > 0 ? ((sell - buy) / buy * 100).toFixed(1) + "%" : "0%";
+
+    sheet.appendRow([
+      new Date().toLocaleString('en-IN'),
+      data.productName,
+      parseFloat(data.price),
+      qty,
+      buy,
+      sell,
+      profit,
+      margin
+    ]);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({status:"success"}))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({status:"error", message: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+      <button onclick="copyScript()" style="margin-top:8px; padding:6px 14px; background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); border-radius:6px; color:var(--accent); font-family:'DM Mono',monospace; font-size:11px; cursor:pointer;">Copy Script</button>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <div class="fields-grid">
+
+      <!-- Product Name -->
+      <div class="field field-full">
+        <label><span class="dot"></span> Product Name</label>
+        <div class="input-wrap">
+          <input type="text" id="productName" class="no-prefix" placeholder="e.g. Wireless Headphones" autocomplete="off"/>
+        </div>
+      </div>
+
+      <!-- Price -->
+      <div class="field">
+        <label><span class="dot"></span> Price (MRP)</label>
+        <div class="input-wrap">
+          <span class="prefix">₹</span>
+          <input type="number" id="price" min="0" step="0.01" placeholder="0.00"/>
+        </div>
+      </div>
+
+      <!-- Quantity -->
+      <div class="field">
+        <label><span class="dot"></span> Quantity</label>
+        <div class="input-wrap">
+          <span class="prefix">#</span>
+          <input type="number" id="quantity" min="1" step="1" placeholder="1"/>
+        </div>
+      </div>
+
+      <!-- Buy Price -->
+      <div class="field">
+        <label><span class="dot orange"></span> Buy Price</label>
+        <div class="input-wrap">
+          <span class="prefix">₹</span>
+          <input type="number" id="buyPrice" class="orange" min="0" step="0.01" placeholder="0.00"/>
+        </div>
+      </div>
+
+      <!-- Sell Price -->
+      <div class="field">
+        <label><span class="dot green"></span> Sell Price</label>
+        <div class="input-wrap">
+          <span class="prefix">₹</span>
+          <input type="number" id="sellPrice" class="green" min="0" step="0.01" placeholder="0.00"/>
+        </div>
+      </div>
+
+      <!-- Profit Display -->
+      <div class="profit-bar">
+        <div>
+          <div class="profit-label">Estimated Profit</div>
+          <div class="profit-pct" id="profitPct">— %</div>
+        </div>
+        <div class="profit-value" id="profitDisplay">₹ 0.00</div>
+      </div>
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-row">
+      <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">
+        <span>↑</span> Add to Sheet
+      </button>
+      <button class="btn btn-secondary" onclick="resetForm()">
+        ✕ Clear
+      </button>
+    </div>
+
+    <!-- Status -->
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <!-- LOCAL TABLE -->
+  <div class="table-section">
+    <div class="section-title">Session Log</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Buy</th>
+            <th>Sell</th>
+            <th>Profit</th>
+            <th>Margin</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="8" class="empty-state">No products added yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Profit Calculator ──────────────────────────────────────────────
+  const buyInput  = document.getElementById('buyPrice');
+  const sellInput = document.getElementById('sellPrice');
+  const profitEl  = document.getElementById('profitDisplay');
+  const pctEl     = document.getElementById('profitPct');
+
+  function calcProfit() {
+    const buy  = parseFloat(buyInput.value)  || 0;
+    const sell = parseFloat(sellInput.value) || 0;
+    const qty  = parseInt(document.getElementById('quantity').value) || 1;
+    const profit = (sell - buy) * qty;
+    const pct    = buy > 0 ? ((sell - buy) / buy * 100).toFixed(1) : 0;
+    profitEl.textContent = '₹ ' + profit.toFixed(2);
+    profitEl.className   = 'profit-value' + (profit < 0 ? ' negative' : '');
+    pctEl.textContent    = buy > 0 ? pct + ' %' : '— %';
+  }
+
+  buyInput.addEventListener('input',  calcProfit);
+  sellInput.addEventListener('input', calcProfit);
+  document.getElementById('quantity').addEventListener('input', calcProfit);
+
+  // ── Session Table ──────────────────────────────────────────────────
+  let rows = [];
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No products added yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((r, i) => {
+      const neg = r.profit < 0;
+      return `<tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td class="td-name">${r.productName}</td>
+        <td>${r.quantity}</td>
+        <td>₹${Number(r.price).toFixed(2)}</td>
+        <td style="color:var(--accent2)">₹${Number(r.buyPrice).toFixed(2)}</td>
+        <td style="color:var(--green)">₹${Number(r.sellPrice).toFixed(2)}</td>
+        <td class="td-profit${neg?' neg':''}">₹${r.profit.toFixed(2)}</td>
+        <td class="${neg?'td-profit neg':'td-profit'}">${r.marginPercent}%</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Status Helper ──────────────────────────────────────────────────
+  function showStatus(type, msg) {
+    const el = document.getElementById('statusMsg');
+    el.className = 'status-msg ' + type;
+    el.innerHTML = type === 'loading'
+      ? `<div class="spinner"></div>${msg}`
+      : `<span>${type === 'success' ? '✓' : '✗'}</span>${msg}`;
+    if (type !== 'loading') setTimeout(() => el.style.display = 'none', 4000);
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────────
+  async function submitForm() {
+    const name  = document.getElementById('productName').value.trim();
+    const price = parseFloat(document.getElementById('price').value);
+    const qty   = parseInt(document.getElementById('quantity').value) || 1;
+    const buy   = parseFloat(buyInput.value);
+    const sell  = parseFloat(sellInput.value);
+
+    if (!name || isNaN(price) || isNaN(buy) || isNaN(sell)) {
+      showStatus('error', 'Please fill all fields correctly.');
+      return;
+    }
+
+    const profit = parseFloat(((sell - buy) * qty).toFixed(2));
+    const margin = buy > 0 ? parseFloat(((sell - buy) / buy * 100).toFixed(1)) : 0;
+    const now    = new Date().toLocaleString('en-IN');
+
+    const payload = {
+      date: now, productName: name, price, quantity: qty,
+      buyPrice: buy, sellPrice: sell, profit, marginPercent: margin
+    };
+
+    const url = document.getElementById('sheetUrl').value.trim();
+
+    if (url) {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      showStatus('loading', 'Sending to Google Sheets…');
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        showStatus('success', 'Product added to Google Sheets successfully!');
+      } catch (err) {
+        showStatus('error', 'Failed to reach Google Sheets. Check your URL.');
+        btn.disabled = false;
+        return;
+      }
+      btn.disabled = false;
+    } else {
+      showStatus('success', 'Saved locally (no Sheet URL provided).');
+    }
+
+    rows.push({ ...payload });
+    renderTable();
+    resetForm();
+  }
+
+  // ── Reset ──────────────────────────────────────────────────────────
+  function resetForm() {
+    ['productName','price','quantity','buyPrice','sellPrice'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    profitEl.textContent = '₹ 0.00';
+    profitEl.className   = 'profit-value';
+    pctEl.textContent    = '— %';
+  }
+
+  // ── Toggle Guide ───────────────────────────────────────────────────
+  function toggleGuide(e) {
+    e.preventDefault();
+    const g = document.getElementById('setup-guide');
+    g.style.display = g.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // ── Copy Script ────────────────────────────────────────────────────
+  function copyScript() {
+    const txt = document.getElementById('scriptCode').textContent;
+    navigator.clipboard.writeText(txt).then(() => {
+      showStatus('success', 'Apps Script code copied to clipboard!');
+    });
+  }
+</script>
+</body>
+</html>
