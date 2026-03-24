@@ -106,27 +106,127 @@
       content: '⚙';
       font-size: 14px;
     }
-    .config-input-wrap {
+
+    /* Connection status row */
+    .connection-status {
       display: flex;
-      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       flex-wrap: wrap;
     }
-    .config-input-wrap input {
-      flex: 1;
-      min-width: 200px;
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .status-pill.connected {
+      background: rgba(0,229,160,0.12);
+      border: 1px solid rgba(0,229,160,0.35);
+      color: var(--green);
+    }
+    .status-pill.disconnected {
+      background: rgba(255,107,53,0.1);
+      border: 1px solid rgba(255,107,53,0.3);
+      color: var(--accent2);
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .url-display {
+      font-size: 11px;
+      color: var(--muted);
       background: var(--surface2);
       border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 12px;
+      word-break: break-all;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .url-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--accent);
+      font-size: 11px;
+    }
+    .btn-edit-url {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      padding: 4px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .btn-edit-url:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Edit URL panel */
+    .edit-url-panel {
+      display: none;
+      margin-top: 12px;
+    }
+    .edit-url-panel.open { display: block; }
+    .edit-url-panel input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--accent);
       border-radius: 8px;
       padding: 10px 14px;
       color: var(--text);
       font-family: 'DM Mono', monospace;
       font-size: 12px;
       outline: none;
-      transition: border-color 0.2s;
     }
-    .config-input-wrap input:focus {
-      border-color: var(--accent);
+    .edit-url-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
     }
+    .btn-save-url {
+      padding: 7px 16px;
+      background: linear-gradient(135deg, var(--accent), #0099cc);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+    }
+    .btn-cancel-url {
+      padding: 7px 16px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
     .config-hint {
       margin-top: 10px;
       font-size: 11px;
@@ -429,20 +529,40 @@
   <!-- GOOGLE SHEET CONFIG -->
   <div class="config-card">
     <div class="config-label">Google Sheets Connection</div>
-    <div class="config-input-wrap">
-      <input type="text" id="sheetUrl" placeholder="Paste your Google Apps Script Web App URL here..." />
+
+    <div class="connection-status">
+      <span class="status-pill connected" id="connectionPill">
+        <span class="status-dot"></span>
+        Connected to Google Sheets
+      </span>
+      <button class="btn-edit-url" onclick="toggleEditUrl()">✎ Change URL</button>
     </div>
-    <div class="config-hint">
-      ⓘ You need a <strong>Google Apps Script Web App URL</strong> to connect.
+
+    <div class="url-display" id="urlDisplay">
+      <span class="url-text" id="urlText">—</span>
+    </div>
+
+    <!-- Edit URL Panel (hidden by default) -->
+    <div class="edit-url-panel" id="editUrlPanel">
+      <input type="text" id="sheetUrlInput" placeholder="Paste your Google Apps Script Web App URL here..." />
+      <div class="edit-url-actions">
+        <button class="btn-save-url" onclick="saveUrl()">✓ Save URL</button>
+        <button class="btn-cancel-url" onclick="toggleEditUrl()">Cancel</button>
+      </div>
+    </div>
+
+    <div class="config-hint" style="margin-top:12px;">
+      ⓘ Auto-connected to your Google Sheet.
       <a href="#setup-guide" onclick="toggleGuide(event)">How to set it up →</a>
     </div>
     <div id="setup-guide" style="display:none; margin-top:14px; padding:14px; background:rgba(0,212,255,0.05); border-radius:8px; border:1px solid rgba(0,212,255,0.15); font-size:11px; line-height:2; color:#a0b0c8;">
       <strong style="color:var(--accent);">Setup Steps:</strong><br>
-      1. Open <a href="https://sheets.google.com" target="_blank">Google Sheets</a> → create a new sheet<br>
-      2. Add headers in row 1: <code style="color:var(--green);">Date | Product Name | Price | Quantity | Buy Price | Sell Price | Profit | Margin%</code><br>
+      1. Open <a href="https://sheets.google.com" target="_blank" style="color:var(--accent);">Google Sheets</a> → create a new sheet<br>
+      2. Add headers in row 1: <code style="color:var(--green);">Date | Product Name | Brand | Price | Quantity | Buy Price | Sell Price | Profit | Margin%</code><br>
       3. Go to <strong>Extensions → Apps Script</strong><br>
       4. Paste the script below, save, then click <strong>Deploy → New deployment → Web App</strong><br>
-      5. Set "Who has access" to <strong>Anyone</strong> → Deploy → copy the URL above<br><br>
+      5. Set "Who has access" to <strong>Anyone</strong> → Deploy → copy the URL<br>
+      6. Click <strong>"✎ Change URL"</strong> above and paste the copied URL → Save<br><br>
       <strong style="color:var(--accent);">Apps Script Code:</strong>
       <pre id="scriptCode" style="margin-top:8px; background:#0a0e1a; padding:12px; border-radius:6px; font-size:10px; overflow-x:auto; color:#e8edf5; white-space:pre-wrap;">function doPost(e) {
   try {
@@ -458,6 +578,7 @@
     sheet.appendRow([
       new Date().toLocaleString('en-IN'),
       data.productName,
+      data.brand,
       parseFloat(data.price),
       qty,
       buy,
@@ -489,6 +610,14 @@
         <label><span class="dot"></span> Product Name</label>
         <div class="input-wrap">
           <input type="text" id="productName" class="no-prefix" placeholder="e.g. Wireless Headphones" autocomplete="off"/>
+        </div>
+      </div>
+
+      <!-- Brand -->
+      <div class="field field-full">
+        <label><span class="dot"></span> Brand</label>
+        <div class="input-wrap">
+          <input type="text" id="brand" class="no-prefix" placeholder="e.g. Sony, Samsung, Generic" autocomplete="off"/>
         </div>
       </div>
 
@@ -562,6 +691,7 @@
           <tr>
             <th>#</th>
             <th>Product</th>
+            <th>Brand</th>
             <th>Qty</th>
             <th>Price</th>
             <th>Buy</th>
@@ -571,7 +701,7 @@
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="8" class="empty-state">No products added yet</td></tr>
+          <tr><td colspan="9" class="empty-state">No products added yet</td></tr>
         </tbody>
       </table>
     </div>
@@ -580,6 +710,56 @@
 </div>
 
 <script>
+  // ── DEFAULT APPS SCRIPT URL ────────────────────────────────────────
+  // ⬇ REPLACE THIS with your deployed Apps Script Web App URL
+  const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzRloz6fk7jP32Z71nPd73UZzEa3bllcIWbLd0IKaw-CEMVe5vVX6OzIDrgToEUXA/exec';
+  // ──────────────────────────────────────────────────────────────────
+
+  // Load URL: localStorage override > default
+  let currentSheetUrl = localStorage.getItem('sheetUrl') || DEFAULT_SHEET_URL;
+
+  function updateUrlDisplay() {
+    const urlText = document.getElementById('urlText');
+    const pill    = document.getElementById('connectionPill');
+    const isSet   = currentSheetUrl && currentSheetUrl !== 'YOUR_APPS_SCRIPT_URL_HERE';
+
+    if (isSet) {
+      urlText.textContent = currentSheetUrl;
+      pill.className = 'status-pill connected';
+      pill.innerHTML = '<span class="status-dot"></span> Connected to Google Sheets';
+    } else {
+      urlText.textContent = 'No URL configured — click "Change URL" to set one';
+      pill.className = 'status-pill disconnected';
+      pill.innerHTML = '<span class="status-dot"></span> Not connected';
+    }
+  }
+
+  function toggleEditUrl() {
+    const panel = document.getElementById('editUrlPanel');
+    const input = document.getElementById('sheetUrlInput');
+    const isOpen = panel.classList.contains('open');
+    if (!isOpen) {
+      input.value = (currentSheetUrl !== 'YOUR_APPS_SCRIPT_URL_HERE') ? currentSheetUrl : '';
+      panel.classList.add('open');
+      input.focus();
+    } else {
+      panel.classList.remove('open');
+    }
+  }
+
+  function saveUrl() {
+    const val = document.getElementById('sheetUrlInput').value.trim();
+    if (!val) { alert('Please enter a valid URL.'); return; }
+    currentSheetUrl = val;
+    localStorage.setItem('sheetUrl', val);
+    document.getElementById('editUrlPanel').classList.remove('open');
+    updateUrlDisplay();
+    showStatus('success', 'Google Sheets URL updated successfully!');
+  }
+
+  // Init display on load
+  updateUrlDisplay();
+
   // ── Profit Calculator ──────────────────────────────────────────────
   const buyInput  = document.getElementById('buyPrice');
   const sellInput = document.getElementById('sellPrice');
@@ -607,7 +787,7 @@
   function renderTable() {
     const tbody = document.getElementById('tableBody');
     if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No products added yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No products added yet</td></tr>';
       return;
     }
     tbody.innerHTML = rows.map((r, i) => {
@@ -615,6 +795,7 @@
       return `<tr>
         <td style="color:var(--muted)">${i+1}</td>
         <td class="td-name">${r.productName}</td>
+        <td style="color:var(--muted)">${r.brand || '—'}</td>
         <td>${r.quantity}</td>
         <td>₹${Number(r.price).toFixed(2)}</td>
         <td style="color:var(--accent2)">₹${Number(r.buyPrice).toFixed(2)}</td>
@@ -638,13 +819,14 @@
   // ── Submit ─────────────────────────────────────────────────────────
   async function submitForm() {
     const name  = document.getElementById('productName').value.trim();
+    const brand = document.getElementById('brand').value.trim();
     const price = parseFloat(document.getElementById('price').value);
     const qty   = parseInt(document.getElementById('quantity').value) || 1;
     const buy   = parseFloat(buyInput.value);
     const sell  = parseFloat(sellInput.value);
 
     if (!name || isNaN(price) || isNaN(buy) || isNaN(sell)) {
-      showStatus('error', 'Please fill all fields correctly.');
+      showStatus('error', 'Please fill all required fields correctly.');
       return;
     }
 
@@ -653,13 +835,14 @@
     const now    = new Date().toLocaleString('en-IN');
 
     const payload = {
-      date: now, productName: name, price, quantity: qty,
+      date: now, productName: name, brand, price, quantity: qty,
       buyPrice: buy, sellPrice: sell, profit, marginPercent: margin
     };
 
-    const url = document.getElementById('sheetUrl').value.trim();
+    const url = currentSheetUrl;
+    const isValidUrl = url && url !== 'YOUR_APPS_SCRIPT_URL_HERE' && url.startsWith('http');
 
-    if (url) {
+    if (isValidUrl) {
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       showStatus('loading', 'Sending to Google Sheets…');
@@ -678,7 +861,7 @@
       }
       btn.disabled = false;
     } else {
-      showStatus('success', 'Saved locally (no Sheet URL provided).');
+      showStatus('success', 'Saved locally (no Sheet URL configured).');
     }
 
     rows.push({ ...payload });
@@ -688,7 +871,7 @@
 
   // ── Reset ──────────────────────────────────────────────────────────
   function resetForm() {
-    ['productName','price','quantity','buyPrice','sellPrice'].forEach(id => {
+    ['productName','brand','price','quantity','buyPrice','sellPrice'].forEach(id => {
       document.getElementById(id).value = '';
     });
     profitEl.textContent = '₹ 0.00';
@@ -712,5 +895,4 @@
   }
 </script>
 </body>
-
 </html>
