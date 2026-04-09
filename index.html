@@ -39,7 +39,6 @@
       margin: 0 auto;
     }
 
-    /* HEADER */
     header {
       text-align: center;
       padding: 40px 0 36px;
@@ -75,7 +74,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* GOOGLE SHEET CONFIG */
     .config-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -107,7 +105,6 @@
       font-size: 14px;
     }
 
-    /* Connection status row */
     .connection-status {
       display: flex;
       align-items: center;
@@ -182,7 +179,6 @@
     }
     .btn-edit-url:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* Edit URL panel */
     .edit-url-panel {
       display: none;
       margin-top: 12px;
@@ -236,7 +232,6 @@
     .config-hint a { color: var(--accent); text-decoration: none; }
     .config-hint a:hover { text-decoration: underline; }
 
-    /* FORM CARD */
     .form-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -281,6 +276,16 @@
     }
     .field label .dot.orange { background: var(--accent2); }
     .field label .dot.green { background: var(--green); }
+    .field label .optional-tag {
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      background: rgba(107,127,163,0.15);
+      border: 1px solid rgba(107,127,163,0.25);
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 4px;
+    }
 
     .input-wrap {
       position: relative;
@@ -325,9 +330,14 @@
       background: rgba(0,229,160,0.04);
       box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
     }
+    .input-wrap input.optional-input {
+      border-style: dashed;
+    }
+    .input-wrap input.optional-input:focus {
+      border-style: solid;
+    }
     .input-wrap input::placeholder { color: #3a4a66; }
 
-    /* PROFIT DISPLAY */
     .profit-bar {
       grid-column: 1 / -1;
       background: var(--surface2);
@@ -359,7 +369,6 @@
       color: var(--muted);
     }
 
-    /* SUBMIT */
     .btn-row {
       margin-top: 28px;
       display: flex;
@@ -400,7 +409,6 @@
     .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-    /* STATUS */
     .status-msg {
       margin-top: 16px;
       padding: 12px 16px;
@@ -430,7 +438,6 @@
       color: var(--accent);
     }
 
-    /* TABLE */
     .table-section {
       margin-top: 32px;
     }
@@ -496,7 +503,6 @@
       letter-spacing: 1px;
     }
 
-    /* SPINNER */
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner {
       width: 16px; height: 16px;
@@ -507,7 +513,6 @@
       flex-shrink: 0;
     }
 
-    /* FADE IN */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -542,7 +547,6 @@
       <span class="url-text" id="urlText">—</span>
     </div>
 
-    <!-- Edit URL Panel (hidden by default) -->
     <div class="edit-url-panel" id="editUrlPanel">
       <input type="text" id="sheetUrlInput" placeholder="Paste your Google Apps Script Web App URL here..." />
       <div class="edit-url-actions">
@@ -558,7 +562,7 @@
     <div id="setup-guide" style="display:none; margin-top:14px; padding:14px; background:rgba(0,212,255,0.05); border-radius:8px; border:1px solid rgba(0,212,255,0.15); font-size:11px; line-height:2; color:#a0b0c8;">
       <strong style="color:var(--accent);">Setup Steps:</strong><br>
       1. Open <a href="https://sheets.google.com" target="_blank" style="color:var(--accent);">Google Sheets</a> → create a new sheet<br>
-      2. Add headers in row 1: <code style="color:var(--green);">Date | Product Name | Brand | Price | Quantity | Buy Price | Sell Price | Profit | Margin%</code><br>
+      2. Add headers in row 1: <code style="color:var(--green);">Date | Product Name | Brand | Price (MRP) | Quantity | Buy Price | Sell Price | Profit | Margin%</code><br>
       3. Go to <strong>Extensions → Apps Script</strong><br>
       4. Paste the script below, save, then click <strong>Deploy → New deployment → Web App</strong><br>
       5. Set "Who has access" to <strong>Anyone</strong> → Deploy → copy the URL<br>
@@ -579,7 +583,7 @@
       new Date().toLocaleString('en-IN'),
       data.productName,
       data.brand,
-      parseFloat(data.price),
+      data.price !== '' ? parseFloat(data.price) : '',
       qty,
       buy,
       sell,
@@ -609,24 +613,16 @@
       <div class="field field-full">
         <label><span class="dot"></span> Product Name</label>
         <div class="input-wrap">
-          <input type="text" id="productName" class="no-prefix" placeholder="e.g. Ligasure, Guide wires " autocomplete="off"/>
+          <input type="text" id="productName" class="no-prefix" placeholder="e.g. Ligasure, Guide wires" autocomplete="off"/>
         </div>
       </div>
 
-      <!-- Brand -->
-      <!-- <div class="field field-full">
-        <label><span class="dot"></span> Brand</label>
-        <div class="input-wrap">
-          <input type="text" id="brand" class="no-prefix" placeholder="e.g. Sony, Samsung, Generic" autocomplete="off"/>
-        </div>
-      </div> -->
-
-      <!-- Price -->
+      <!-- Price (MRP) — OPTIONAL -->
       <div class="field">
-        <label><span class="dot"></span> Price (MRP)</label>
+        <label><span class="dot"></span> Price (MRP) <span class="optional-tag">optional</span></label>
         <div class="input-wrap">
           <span class="prefix">₹</span>
-          <input type="number" id="price" min="0" step="0.01" placeholder="0.00"/>
+          <input type="number" id="price" class="optional-input" min="0" step="0.01" placeholder="0.00"/>
         </div>
       </div>
 
@@ -668,7 +664,6 @@
 
     </div>
 
-    <!-- Buttons -->
     <div class="btn-row">
       <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">
         <span>↑</span> Add to Sheet
@@ -678,7 +673,6 @@
       </button>
     </div>
 
-    <!-- Status -->
     <div class="status-msg" id="statusMsg"></div>
   </div>
 
@@ -693,7 +687,7 @@
             <th>Product</th>
             <th>Brand</th>
             <th>Qty</th>
-            <th>Price</th>
+            <th>Price (MRP)</th>
             <th>Buy</th>
             <th>Sell</th>
             <th>Profit</th>
@@ -710,12 +704,8 @@
 </div>
 
 <script>
-  // ── DEFAULT APPS SCRIPT URL ────────────────────────────────────────
-  // ⬇ REPLACE THIS with your deployed Apps Script Web App URL
   const DEFAULT_SHEET_URL = '';
-  // ──────────────────────────────────────────────────────────────────
 
-  // Load URL: localStorage override > default
   let currentSheetUrl = localStorage.getItem('sheetUrl') || DEFAULT_SHEET_URL;
 
   function updateUrlDisplay() {
@@ -757,10 +747,8 @@
     showStatus('success', 'Google Sheets URL updated successfully!');
   }
 
-  // Init display on load
   updateUrlDisplay();
 
-  // ── Profit Calculator ──────────────────────────────────────────────
   const buyInput  = document.getElementById('buyPrice');
   const sellInput = document.getElementById('sellPrice');
   const profitEl  = document.getElementById('profitDisplay');
@@ -781,7 +769,6 @@
   sellInput.addEventListener('input', calcProfit);
   document.getElementById('quantity').addEventListener('input', calcProfit);
 
-  // ── Session Table ──────────────────────────────────────────────────
   let rows = [];
 
   function renderTable() {
@@ -792,12 +779,15 @@
     }
     tbody.innerHTML = rows.map((r, i) => {
       const neg = r.profit < 0;
+      const priceDisplay = (r.price !== '' && r.price !== null && !isNaN(r.price))
+        ? '₹' + Number(r.price).toFixed(2)
+        : '<span style="color:var(--muted)">—</span>';
       return `<tr>
         <td style="color:var(--muted)">${i+1}</td>
         <td class="td-name">${r.productName}</td>
         <td style="color:var(--muted)">${r.brand || '—'}</td>
         <td>${r.quantity}</td>
-        <td>₹${Number(r.price).toFixed(2)}</td>
+        <td>${priceDisplay}</td>
         <td style="color:var(--accent2)">₹${Number(r.buyPrice).toFixed(2)}</td>
         <td style="color:var(--green)">₹${Number(r.sellPrice).toFixed(2)}</td>
         <td class="td-profit${neg?' neg':''}">₹${r.profit.toFixed(2)}</td>
@@ -806,7 +796,6 @@
     }).join('');
   }
 
-  // ── Status Helper ──────────────────────────────────────────────────
   function showStatus(type, msg) {
     const el = document.getElementById('statusMsg');
     el.className = 'status-msg ' + type;
@@ -816,17 +805,17 @@
     if (type !== 'loading') setTimeout(() => el.style.display = 'none', 4000);
   }
 
-  // ── Submit ─────────────────────────────────────────────────────────
   async function submitForm() {
     const name  = document.getElementById('productName').value.trim();
-    const brand = document.getElementById('brand').value.trim();
-    const price = parseFloat(document.getElementById('price').value);
+    const brand = '';
+    const priceRaw = document.getElementById('price').value.trim();
+    const price = priceRaw !== '' ? parseFloat(priceRaw) : '';
     const qty   = parseInt(document.getElementById('quantity').value) || 1;
     const buy   = parseFloat(buyInput.value);
     const sell  = parseFloat(sellInput.value);
 
-    if (!name || isNaN(price) || isNaN(buy) || isNaN(sell)) {
-      showStatus('error', 'Please fill all required fields correctly.');
+    if (!name || isNaN(buy) || isNaN(sell)) {
+      showStatus('error', 'Please fill Product Name, Buy Price and Sell Price.');
       return;
     }
 
@@ -869,9 +858,8 @@
     resetForm();
   }
 
-  // ── Reset ──────────────────────────────────────────────────────────
   function resetForm() {
-    ['productName','brand','price','quantity','buyPrice','sellPrice'].forEach(id => {
+    ['productName','price','quantity','buyPrice','sellPrice'].forEach(id => {
       document.getElementById(id).value = '';
     });
     profitEl.textContent = '₹ 0.00';
@@ -879,14 +867,12 @@
     pctEl.textContent    = '— %';
   }
 
-  // ── Toggle Guide ───────────────────────────────────────────────────
   function toggleGuide(e) {
     e.preventDefault();
     const g = document.getElementById('setup-guide');
     g.style.display = g.style.display === 'none' ? 'block' : 'none';
   }
 
-  // ── Copy Script ────────────────────────────────────────────────────
   function copyScript() {
     const txt = document.getElementById('scriptCode').textContent;
     navigator.clipboard.writeText(txt).then(() => {
